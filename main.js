@@ -18,22 +18,33 @@ import * as tf from '@tensorflow/tfjs';
 import * as knnClassifier from '@tensorflow-models/knn-classifier';
 
 // Number of classes to classify
-const NUM_CLASSES = 3;
+const NUM_CLASSES = 4;
 // Webcam Image size. Must be 227. 
-const IMAGE_SIZE = 227;
+const VIDEO_WIDTH = 500;
+const VIDEO_HEIGHT = 250;
 // K value for KNN
 const TOPK = 10;
 
+const images = ['elefante', 'pajaro', 'mono', 'canguro'];
 
 class Main {
   constructor() {
     // Initiate variables
     this.infoTexts = [];
+    this.teachableContainers = [];
     this.training = -1; // -1 when no class is being trained
     this.videoPlaying = false;
 
     // Initiate deeplearn.js math and knn classifier objects
     this.bindPage();
+
+    const container = document.createElement('div');
+    container.className = 'container-fluid'
+    document.body.appendChild(container);
+
+    const videoDiv = document.createElement('div');
+    videoDiv.className = 'row justify-content-center video-container';
+    container.appendChild(videoDiv);
 
     // Create video element that will contain the webcam image
     this.video = document.createElement('video');
@@ -41,28 +52,59 @@ class Main {
     this.video.setAttribute('playsinline', '');
 
     // Add video element to DOM
-    document.body.appendChild(this.video);
+    videoDiv.appendChild(this.video);    
 
+    let rowDiv;
     // Create training buttons and info texts    
     for (let i = 0; i < NUM_CLASSES; i++) {
+
+      if (i%2 === 0) {
+        // Add div for row
+        rowDiv = document.createElement('div');
+        rowDiv.className = 'row justify-content-between fila'
+        container.appendChild(rowDiv); 
+      }   
+
+      // Add div for class
       const div = document.createElement('div');
-      document.body.appendChild(div);
+      rowDiv.appendChild(div);
       div.style.marginBottom = '10px';
+      div.className = 'teachable-container col-3';
 
+      
+      // Add images
+      const divImage = document.createElement('div');
+      divImage.className = 'row justify-content-center align-items-center image-container'
+      div.appendChild(divImage);
+      const image = document.createElement('img');
+      console.log(image.src);
+      image.src = `images/${images[i]}.png`;      
+      divImage.appendChild(image);
+      
       // Create training button
+      const divButton = document.createElement('div');
+      divButton.className = 'row justify-content-center button-container'
+      div.appendChild(divButton);
       const button = document.createElement('button')
-      button.innerText = "Train " + i;
-      div.appendChild(button);
-
+      button.innerText = `Entrena al ${images[i]}`;
+      button.className = 'btn btn-outline-primary'
+      divButton.appendChild(button);
+      
       // Listen for mouse events when clicking the button
       button.addEventListener('mousedown', () => this.training = i);
       button.addEventListener('mouseup', () => this.training = -1);
-
+      
       // Create info text
+      const divSpam = document.createElement('div');
+      divSpam.className = 'row justify-content-center'
+      div.appendChild(divSpam);
+      
       const infoText = document.createElement('span')
-      infoText.innerText = " No examples added";
-      div.appendChild(infoText);
+      infoText.innerText = 'Pendiente de Entrenar';
+      divSpam.appendChild(infoText);
+      
       this.infoTexts.push(infoText);
+      this.teachableContainers.push(div);
     }
 
 
@@ -70,8 +112,8 @@ class Main {
     navigator.mediaDevices.getUserMedia({ video: true, audio: false })
       .then((stream) => {
         this.video.srcObject = stream;
-        this.video.width = IMAGE_SIZE;
-        this.video.height = IMAGE_SIZE;
+        this.video.width = VIDEO_WIDTH;
+        this.video.height = VIDEO_HEIGHT;
 
         this.video.addEventListener('playing', () => this.videoPlaying = true);
         this.video.addEventListener('paused', () => this.videoPlaying = false);
@@ -130,8 +172,10 @@ class Main {
           // Make the predicted class bold
           if (res.classIndex == i) {
             this.infoTexts[i].style.fontWeight = 'bold';
+            this.teachableContainers[i].style.backgroundColor = '#FF0066';                        
           } else {
             this.infoTexts[i].style.fontWeight = 'normal';
+            this.teachableContainers[i].style.backgroundColor = '#ffffff'; 
           }
 
           // Update info text

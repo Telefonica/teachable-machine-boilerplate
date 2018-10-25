@@ -1,0 +1,28 @@
+body {  
+  background-image: url(images/green-goblin.png);
+  background-repeat:repeat;
+}
+
+.video-container {
+  height: 0px;
+  top: 190px;
+  position: relative;
+}
+
+.teachable-container {
+  background-color: #ffffff;
+  margin: 10px;
+  padding-bottom: 15px;
+}
+
+.image-container {
+  height: 200px;  
+}
+
+.image-container img {
+  height: 130px;
+}
+
+.button-container {
+  margin-bottom: 15px;
+}
