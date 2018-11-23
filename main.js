@@ -50,6 +50,7 @@ class Main {
     this.video = document.createElement('video');
     this.video.setAttribute('autoplay', '');
     this.video.setAttribute('playsinline', '');
+    this.video.className = 'col-sm-6';
 
     // Add video element to DOM
     videoDiv.appendChild(this.video);    
@@ -69,7 +70,7 @@ class Main {
       const div = document.createElement('div');
       rowDiv.appendChild(div);
       div.style.marginBottom = '10px';
-      div.className = 'teachable-container col-3';
+      div.className = 'teachable-container col-sm-3';
 
       
       // Add images
@@ -78,22 +79,9 @@ class Main {
       div.appendChild(divImage);
       const image = document.createElement('img');
       console.log(image.src);
-      image.src = `images/${images[i]}.png`;      
+      image.src = `images/${images[i]}.png`;
       divImage.appendChild(image);
-      
-      // Create training button
-      const divButton = document.createElement('div');
-      divButton.className = 'row justify-content-center button-container'
-      div.appendChild(divButton);
-      const button = document.createElement('button')
-      button.innerText = `Entrena al ${images[i]}`;
-      button.className = 'btn btn-outline-primary'
-      divButton.appendChild(button);
-      
-      // Listen for mouse events when clicking the button
-      button.addEventListener('mousedown', () => this.training = i);
-      button.addEventListener('mouseup', () => this.training = -1);
-      
+
       // Create info text
       const divSpam = document.createElement('div');
       divSpam.className = 'row justify-content-center'
@@ -105,19 +93,43 @@ class Main {
       
       this.infoTexts.push(infoText);
       this.teachableContainers.push(div);
+      
+      // Create training button
+      const divButton = document.createElement('div');
+      divButton.className = 'row justify-content-center button-container'
+      div.appendChild(divButton);
+      const linkStart = document.createElement('a');
+      linkStart.innerText = `Empezar`;
+      linkStart.className = 'btn btn-outline-primary btnStart';
+      const linkStop = document.createElement('a');
+
+      linkStop.innerText = `Detener`;
+      linkStop.className = 'btn btn-outline-primary btnStart';
+      divButton.appendChild(linkStart);
+      divButton.appendChild(linkStop);
+      
+      // Listen for mouse events when clicking the button
+      linkStart.addEventListener('click', () => {
+        this.training = i;
+        console.log('click 1');        
+      });
+      linkStop.addEventListener('click', () => {
+        this.training = -1;
+        console.log('click 2');
+      });      
     }
 
 
     // Setup webcam
     navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-      .then((stream) => {
-        this.video.srcObject = stream;
-        this.video.width = VIDEO_WIDTH;
-        this.video.height = VIDEO_HEIGHT;
+    .then((stream) => {
+      this.video.srcObject = stream;
+      this.video.width = VIDEO_WIDTH;
+      this.video.height = VIDEO_HEIGHT;
 
-        this.video.addEventListener('playing', () => this.videoPlaying = true);
-        this.video.addEventListener('paused', () => this.videoPlaying = false);
-      })
+      this.video.addEventListener('playing', () => this.videoPlaying = true);
+      this.video.addEventListener('paused', () => this.videoPlaying = false);
+    })
   }
 
   async bindPage() {
@@ -163,6 +175,7 @@ class Main {
         // If classes have been added run predict
         logits = infer();
         const res = await this.knn.predictClass(logits, TOPK);
+        // console.log('res.classIndex ===>', res.classIndex)
 
         for (let i = 0; i < NUM_CLASSES; i++) {
 
