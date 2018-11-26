@@ -1,28 +1,109 @@
-body {  
-  background-image: url(images/green-goblin.png);
-  background-repeat:repeat;
+body {
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-.video-container {
-  height: 0px;
-  top: 190px;
-  position: relative;
+.wrapper {
+  display: flex;  
+  flex-flow: row wrap;
+  text-align: center;
 }
 
-.teachable-container {
-  background-color: #ffffff;
-  margin: 10px;
-  padding-bottom: 15px;
+.wrapper > * {
+  flex: 1 100%;
 }
 
-.image-container {
-  height: 200px;  
+.header {
+  position: absolute;
+  z-index: 3000;
 }
 
-.image-container img {
-  height: 130px;
+.header a {
+  border: 1px solid white;
+  color: white;  
+  padding: 1em 1.5em;
+  margin: 0 2px 0 0;
+  text-decoration: none;
+  text-transform: uppercase;
+  font-size: 2em;
+  font-weight: bold;
 }
 
-.button-container {
-  margin-bottom: 15px;
+.header a:hover {
+  border: 1px solid deepskyblue;
+  background-color: deepskyblue;
+  color: white;
+}
+
+.header a:active {
+  border: 1px solid black;
+  background-color: black;
+  color: white;
+}
+
+.main {
+  background: deepskyblue;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.animal {
+  height: 370px;
+}
+
+.animal-0 {
+  background: white;
+}
+
+.animal-1 {
+  background: #E3E3E3;
+}
+
+
+.animal-2 {
+  background:#E3E3E3;  
+}
+
+.animal-3 {
+  background: white;  
+}
+
+.imageContainer{
+  height: 240px;
+  margin-bottom: 5px;
+  padding-top: 20px
+}
+
+.textContainer {
+  margin-bottom: 25px;  
+}
+
+.button {
+  border: 1px solid deepskyblue;
+  color: deepskyblue;
+  padding: 1em 1.5em;
+  margin: 0 2px 0 0;
+  font-weight: bold;
+}
+
+.button:hover {
+  background-color: deepskyblue;
+  color: white;
+}
+
+.button:active {
+  border: 1px solid black;
+  background-color: black;
+  color: white;
+}
+
+@media all and (min-width: 600px) {
+  .aside { flex: 1 auto; }
+}
+
+@media all and (min-width: 800px) {
+  .main    { flex: 3 0px; }
+  .aside-1 { order: 1; } 
+  .main    { order: 2; }
+  .aside-2 { order: 3; }
 }

@@ -16,12 +16,13 @@ import "@babel/polyfill";
 import * as mobilenetModule from '@tensorflow-models/mobilenet';
 import * as tf from '@tensorflow/tfjs';
 import * as knnClassifier from '@tensorflow-models/knn-classifier';
+import { div } from "@tensorflow/tfjs";
 
 // Number of classes to classify
 const NUM_CLASSES = 4;
 // Webcam Image size. Must be 227. 
-const VIDEO_WIDTH = 500;
-const VIDEO_HEIGHT = 250;
+const VIDEO_WIDTH = 700;
+const VIDEO_HEIGHT = 400;
 // K value for KNN
 const TOPK = 10;
 
@@ -34,92 +35,64 @@ class Main {
     this.teachableContainers = [];
     this.training = -1; // -1 when no class is being trained
     this.videoPlaying = false;
+    this.trainedAnimals = [false, false, false, false];
 
     // Initiate deeplearn.js math and knn classifier objects
     this.bindPage();
 
-    const container = document.createElement('div');
-    container.className = 'container-fluid'
-    document.body.appendChild(container);
-
-    const videoDiv = document.createElement('div');
-    videoDiv.className = 'row justify-content-center video-container';
-    container.appendChild(videoDiv);
-
     // Create video element that will contain the webcam image
-    this.video = document.createElement('video');
-    this.video.setAttribute('autoplay', '');
-    this.video.setAttribute('playsinline', '');
-    this.video.className = 'col-sm-6';
+    this.video = document.querySelector('#videoElement');
 
-    // Add video element to DOM
-    videoDiv.appendChild(this.video);    
-
-    let rowDiv;
     // Create training buttons and info texts    
     for (let i = 0; i < NUM_CLASSES; i++) {
-
-      if (i%2 === 0) {
-        // Add div for row
-        rowDiv = document.createElement('div');
-        rowDiv.className = 'row justify-content-between fila'
-        container.appendChild(rowDiv); 
-      }   
-
-      // Add div for class
-      const div = document.createElement('div');
-      rowDiv.appendChild(div);
-      div.style.marginBottom = '10px';
-      div.className = 'teachable-container col-sm-3';
-
       
-      // Add images
-      const divImage = document.createElement('div');
-      divImage.className = 'row justify-content-center align-items-center image-container'
-      div.appendChild(divImage);
+      // Get div for the animal
+      const divAnimal = document.querySelector(`.animal-${i}`);
+
+      // Get div for image
+      const divImage = document.querySelector(`.animal-${i} .imageContainer`);
+
       const image = document.createElement('img');
       console.log(image.src);
       image.src = `images/${images[i]}.png`;
       divImage.appendChild(image);
 
-      // Create info text
-      const divSpam = document.createElement('div');
-      divSpam.className = 'row justify-content-center'
-      div.appendChild(divSpam);
-      
-      const infoText = document.createElement('span')
+      // Create div for text info
+      const divText = document.querySelector(`.animal-${i} .textContainer`);      
+      const infoText = document.createElement('p')
       infoText.innerText = 'Pendiente de Entrenar';
-      divSpam.appendChild(infoText);
+      divText.appendChild(infoText);
       
       this.infoTexts.push(infoText);
-      this.teachableContainers.push(div);
       
-      // Create training button
-      const divButton = document.createElement('div');
-      divButton.className = 'row justify-content-center button-container'
-      div.appendChild(divButton);
+      // Create training buttons
+      const divButton = document.querySelector(`.animal-${i} .buttonContainer`);
       const linkStart = document.createElement('a');
       linkStart.innerText = `Empezar`;
-      linkStart.className = 'btn btn-outline-primary btnStart';
+      linkStart.className = 'button';
       const linkStop = document.createElement('a');
-
       linkStop.innerText = `Detener`;
-      linkStop.className = 'btn btn-outline-primary btnStart';
+      linkStop.className = 'button';
       divButton.appendChild(linkStart);
       divButton.appendChild(linkStop);
       
       // Listen for mouse events when clicking the button
       linkStart.addEventListener('click', () => {
+        console.log('trainging ===>', i);
+        this.videoPlaying = true;
         this.training = i;
-        console.log('click 1');        
+        this.trainedAnimals[i] = true;                 
       });
       linkStop.addEventListener('click', () => {
+        console.log('stop training');
+        this.videoPlaying = false;
         this.training = -1;
-        console.log('click 2');
+        if (this.allAnimalsTrained()) {
+          console.log('hey you, lets start playing')
+          this.playGame();
+        }        
       });      
     }
-
-
     // Setup webcam
     navigator.mediaDevices.getUserMedia({ video: true, audio: false })
     .then((stream) => {
@@ -130,13 +103,18 @@ class Main {
       this.video.addEventListener('playing', () => this.videoPlaying = true);
       this.video.addEventListener('paused', () => this.videoPlaying = false);
     })
+    .catch((e) => {
+      console.log('error getting video stream =>', e);
+    });
+
+    // Play or Train
+    const start = document.querySelector('.header a');
+    start.addEventListener('click', this.start.bind(this));
   }
 
   async bindPage() {
     this.knn = knnClassifier.create();
     this.mobilenet = await mobilenetModule.load();
-
-    this.start();
   }
 
   start() {
@@ -144,7 +122,10 @@ class Main {
       this.stop();
     }
     this.video.play();
-    this.timer = requestAnimationFrame(this.animate.bind(this));
+    this.timer = requestAnimationFrame(this.train.bind(this)); 
+
+    const headerButton = document.querySelector('.header a');
+    headerButton.style.display = 'none'; 
   }
 
   stop() {
@@ -152,7 +133,18 @@ class Main {
     cancelAnimationFrame(this.timer);
   }
 
-  async animate() {
+  allAnimalsTrained() {
+    console.log('trained animals ==>', this.trainedAnimals);
+
+    for (let i = 0; i < NUM_CLASSES; i++) {
+      if (!this.trainedAnimals[i]) {
+        return false;
+      }
+    }
+    return true;      
+  }
+
+  async train() {
     if (this.videoPlaying) {
       // Get image data from video element
       const image = tf.fromPixels(this.video);
@@ -175,24 +167,15 @@ class Main {
         // If classes have been added run predict
         logits = infer();
         const res = await this.knn.predictClass(logits, TOPK);
-        // console.log('res.classIndex ===>', res.classIndex)
+        console.log('res.classIndex ===>', res);
 
         for (let i = 0; i < NUM_CLASSES; i++) {
 
           // The number of examples for each class
           const exampleCount = this.knn.getClassExampleCount();
 
-          // Make the predicted class bold
-          if (res.classIndex == i) {
-            this.infoTexts[i].style.fontWeight = 'bold';
-            this.teachableContainers[i].style.backgroundColor = '#FF0066';                        
-          } else {
-            this.infoTexts[i].style.fontWeight = 'normal';
-            this.teachableContainers[i].style.backgroundColor = '#ffffff'; 
-          }
-
           // Update info text
-          if (exampleCount[i] > 0) {
+          if (exampleCount[i] > 0 && this.training != -1) {
             this.infoTexts[i].innerText = ` ${exampleCount[i]} examples - ${res.confidences[i] * 100}%`
           }
         }
@@ -204,7 +187,58 @@ class Main {
         logits.dispose();
       }
     }
-    this.timer = requestAnimationFrame(this.animate.bind(this));
+    this.timer = requestAnimationFrame(this.train.bind(this));
+  }
+
+  async playGame() {
+    const textContainers = document.getElementsByClassName('textContainer');
+    console.log('textContainers ===>', textContainers);
+    for (let i = 0; i < textContainers.length; i ++) {
+      textContainers[i].style.display = 'none';
+    }
+
+    const buttonContainers = document.getElementsByClassName('buttonContainer');    
+    for (let i = 0; i < buttonContainers.length; i ++) {
+      buttonContainers[i].style.display = 'none';
+    }
+
+    const divAnimal = document.getElementsByClassName('animal');
+
+    // Get image data from video element
+    const image = tf.fromPixels(this.video);
+
+    let logits;
+    // 'conv_preds' is the logits activation of MobileNet.
+    const infer = () => this.mobilenet.infer(image, 'conv_preds');
+
+    const numClasses = this.knn.getNumClasses();
+    if (numClasses > 0) {
+
+      // If classes have been added run predict
+      logits = infer();
+      const res = await this.knn.predictClass(logits, TOPK);
+
+      for (let i = 0; i < NUM_CLASSES; i++) {
+
+        // The number of examples for each class
+        const exampleCount = this.knn.getClassExampleCount();
+
+        // Make the predicted class bold
+        if (res.classIndex == i) {
+          divAnimal[i].style.backgroundColor = '#FF0066';                        
+        } else {          
+          divAnimal[i].style.backgroundColor = '#ffffff'; 
+        }
+      }
+    }
+
+    // Dispose image when done
+    image.dispose();
+    if (logits != null) {
+      logits.dispose();
+    }
+    
+    this.timer = requestAnimationFrame(this.playGame.bind(this));
   }
 }
 
