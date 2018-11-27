@@ -79,16 +79,16 @@ class Main {
       // Listen for mouse events when clicking the button
       linkStart.addEventListener('click', () => {
         console.log('trainging ===>', i);
-        this.videoPlaying = true;
         this.training = i;
+        this.videoPlaying = true;
         this.trainedAnimals[i] = true;                 
       });
       linkStop.addEventListener('click', () => {
         console.log('stop training');
-        this.videoPlaying = false;
         this.training = -1;
+        this.videoPlaying = false;
         if (this.allAnimalsTrained()) {
-          console.log('hey you, lets start playing')
+          console.log('hey you, lets start playing');
           this.playGame();
         }        
       });      
@@ -108,7 +108,7 @@ class Main {
     });
 
     // Play or Train
-    const start = document.querySelector('.header a');
+    const start = document.querySelector('.modal a');
     start.addEventListener('click', this.start.bind(this));
   }
 
@@ -123,9 +123,11 @@ class Main {
     }
     this.video.play();
     this.timer = requestAnimationFrame(this.train.bind(this)); 
-
-    const headerButton = document.querySelector('.header a');
-    headerButton.style.display = 'none'; 
+    
+    const modal = document.querySelector('.modal');
+    modal.style.display = 'none';
+    const headerButton = document.querySelector('.modal a');
+    headerButton.style.display = 'none';
   }
 
   stop() {
@@ -218,16 +220,15 @@ class Main {
       logits = infer();
       const res = await this.knn.predictClass(logits, TOPK);
 
-      for (let i = 0; i < NUM_CLASSES; i++) {
-
-        // The number of examples for each class
-        const exampleCount = this.knn.getClassExampleCount();
-
+      for (let i = 0; i < NUM_CLASSES; i++) {                
         // Make the predicted class bold
         if (res.classIndex == i) {
-          divAnimal[i].style.backgroundColor = '#FF0066';                        
+          divAnimal[i].style.opacity = '0.3';                        
+          divAnimal[i].style.filter = 'alpha(opacity=30)';
+
         } else {          
-          divAnimal[i].style.backgroundColor = '#ffffff'; 
+          divAnimal[i].style.opacity = '1';                  
+          divAnimal[i].style.filter = 'alpha(opacity=1)';                  
         }
       }
     }
