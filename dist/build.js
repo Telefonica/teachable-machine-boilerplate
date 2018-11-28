@@ -202,7 +202,7 @@ var Main = function () {
           switch (_context2.prev = _context2.next) {
             case 0:
               if (!this.videoPlaying) {
-                _context2.next = 15;
+                _context2.next = 14;
                 break;
               }
 
@@ -228,7 +228,7 @@ var Main = function () {
               numClasses = this.knn.getNumClasses();
 
               if (!(numClasses > 0)) {
-                _context2.next = 13;
+                _context2.next = 12;
                 break;
               }
 
@@ -240,7 +240,7 @@ var Main = function () {
             case 10:
               res = _context2.sent;
 
-              console.log('res.classIndex ===>', res);
+              // console.log('res.classIndex ===>', res);
 
               for (i = 0; i < NUM_CLASSES; i++) {
 
@@ -254,7 +254,7 @@ var Main = function () {
                 }
               }
 
-            case 13:
+            case 12:
 
               // Dispose image when done
               image.dispose();
@@ -262,10 +262,10 @@ var Main = function () {
                 logits.dispose();
               }
 
-            case 15:
+            case 14:
               this.timer = requestAnimationFrame(this.train.bind(this));
 
-            case 16:
+            case 15:
             case 'end':
               return _context2.stop();
           }
@@ -277,15 +277,15 @@ var Main = function () {
     value: function playGame() {
       var _this3 = this;
 
-      var textContainers, i, buttonContainers, _i, divAnimal, image, logits, infer, numClasses, res, _i2;
+      var textContainers, i, buttonContainers, _i, divAnimal, okAnimal, okAnimalImg, okMessage, image, logits, infer, numClasses, res, foundAnimal, _i2;
 
       return regeneratorRuntime.async(function playGame$(_context3) {
         while (1) {
           switch (_context3.prev = _context3.next) {
             case 0:
               textContainers = document.getElementsByClassName('textContainer');
+              // console.log('textContainers ===>', textContainers);
 
-              console.log('textContainers ===>', textContainers);
               for (i = 0; i < textContainers.length; i++) {
                 textContainers[i].style.display = 'none';
               }
@@ -297,6 +297,9 @@ var Main = function () {
               }
 
               divAnimal = document.getElementsByClassName('animal');
+              okAnimal = document.querySelector('.ok-animal');
+              okAnimalImg = document.querySelector('.ok-animal img');
+              okMessage = document.querySelector('.ok-message');
 
               // Get image data from video element
 
@@ -311,31 +314,48 @@ var Main = function () {
               numClasses = this.knn.getNumClasses();
 
               if (!(numClasses > 0)) {
-                _context3.next = 16;
+                _context3.next = 19;
                 break;
               }
 
               // If classes have been added run predict
               logits = infer();
-              _context3.next = 14;
+              _context3.next = 16;
               return regeneratorRuntime.awrap(this.knn.predictClass(logits, TOPK));
 
-            case 14:
+            case 16:
               res = _context3.sent;
-
+              foundAnimal = false;
 
               for (_i2 = 0; _i2 < NUM_CLASSES; _i2++) {
                 // Make the predicted class bold
                 if (res.classIndex == _i2) {
                   divAnimal[_i2].style.opacity = '0.3';
                   divAnimal[_i2].style.filter = 'alpha(opacity=30)';
+                  console.log('ok i =>', _i2);
+                  console.log('ok-image ==>', 'images/ok-' + images[_i2] + '.png');
+                  okMessage.innerHTML = 'Pareces un ' + images[_i2];
+
+                  // Hide video and display animal ---> does not look right
+                  // this.video.style.display = 'none';
+                  // okAnimalImg.src = `images/ok-${images[i]}.png`;
+                  // okAnimal.style.display = 'block';
+                  // foundAnimal = true;
                 } else {
                   divAnimal[_i2].style.opacity = '1';
                   divAnimal[_i2].style.filter = 'alpha(opacity=1)';
+
+                  // If animal not found return video to show and hide image.
+
+                  // if (!foundAnimal) {
+                  //   okAnimal.style.display = 'none';
+                  //   okAnimalImg.src = ``;
+                  //   this.video.style.display = 'block';
+                  // }
                 }
               }
 
-            case 16:
+            case 19:
 
               // Dispose image when done
               image.dispose();
@@ -345,7 +365,7 @@ var Main = function () {
 
               this.timer = requestAnimationFrame(this.playGame.bind(this));
 
-            case 19:
+            case 22:
             case 'end':
               return _context3.stop();
           }

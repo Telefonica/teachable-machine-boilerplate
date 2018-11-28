@@ -26,7 +26,23 @@ const VIDEO_HEIGHT = 400;
 // K value for KNN
 const TOPK = 10;
 
-const images = ['elefante', 'pajaro', 'mono', 'canguro'];
+const availableAnimals = ['elefante', 'pajaro', 'mono', 'canguro', 'gallina', 'pinguino'];
+
+function getRandom(arr, n) {
+  var result = new Array(n),
+      len = arr.length,
+      taken = new Array(len);
+  if (n > len)
+      throw new RangeError("getRandom: more elements taken than available");
+  while (n--) {
+      var x = Math.floor(Math.random() * len);
+      result[n] = arr[x in taken ? taken[x] : x];
+      taken[x] = --len in taken ? taken[len] : len;
+  }
+  return result;
+}
+
+const images = getRandom(availableAnimals, 4);
 
 class Main {
   constructor() {
@@ -83,13 +99,18 @@ class Main {
         this.videoPlaying = true;
         this.trainedAnimals[i] = true;                 
       });
+
       linkStop.addEventListener('click', () => {
         console.log('stop training');
         this.training = -1;
         this.videoPlaying = false;
         if (this.allAnimalsTrained()) {
           console.log('hey you, lets start playing');
-          this.playGame();
+          const modal = document.querySelector('.modal');
+          modal.style.display = 'block';
+          const headerButton = document.querySelector('.modal a');
+          headerButton.innerHTML = 'Quiero jugar ya!';
+          headerButton.style.display = 'block';          
         }        
       });      
     }
@@ -109,7 +130,16 @@ class Main {
 
     // Play or Train
     const start = document.querySelector('.modal a');
-    start.addEventListener('click', this.start.bind(this));
+    start.addEventListener('click', () => {
+      console.log('start ===>', start.innerHTML);
+      if(start.innerHTML === 'Empezar a Entrenar') {
+        console.log('entrenar ***********');
+        this.start();
+      } else if(start.innerHTML === 'Quiero jugar ya!') {
+        console.log('Jugar **********');
+        this.startGame();
+      }
+    });
   }
 
   async bindPage() {
@@ -118,6 +148,7 @@ class Main {
   }
 
   start() {
+    console.log('start ====>')
     if (this.timer) {
       this.stop();
     }
@@ -192,6 +223,15 @@ class Main {
     this.timer = requestAnimationFrame(this.train.bind(this));
   }
 
+  startGame() {
+    const modal = document.querySelector('.modal');
+    modal.style.display = 'none';
+    const headerButton = document.querySelector('.modal a');
+    headerButton.style.display = 'none';
+
+    this.playGame();
+  }
+
   async playGame() {
     const textContainers = document.getElementsByClassName('textContainer');
     // console.log('textContainers ===>', textContainers);
@@ -232,6 +272,9 @@ class Main {
           console.log('ok i =>', i);
           console.log('ok-image ==>', `images/ok-${images[i]}.png`);
           okMessage.innerHTML = `Pareces un ${images[i]}`;
+          if (images[i] == 'gallina') {
+            okMessage.innerHTML = `Pareces una ${images[i]}`;
+          }
 
           // Hide video and display animal ---> does not look right
           // this.video.style.display = 'none';
