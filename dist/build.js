@@ -99,14 +99,14 @@ var Main = function () {
       // Listen for mouse events when clicking the button
       linkStart.addEventListener('click', function () {
         console.log('trainging ===>', i);
-        _this.videoPlaying = true;
         _this.training = i;
+        _this.videoPlaying = true;
         _this.trainedAnimals[i] = true;
       });
       linkStop.addEventListener('click', function () {
         console.log('stop training');
-        _this.videoPlaying = false;
         _this.training = -1;
+        _this.videoPlaying = false;
         if (_this.allAnimalsTrained()) {
           console.log('hey you, lets start playing');
           _this.playGame();
@@ -134,7 +134,7 @@ var Main = function () {
     });
 
     // Play or Train
-    var start = document.querySelector('.header a');
+    var start = document.querySelector('.modal a');
     start.addEventListener('click', this.start.bind(this));
   }
 
@@ -168,7 +168,9 @@ var Main = function () {
       this.video.play();
       this.timer = requestAnimationFrame(this.train.bind(this));
 
-      var headerButton = document.querySelector('.header a');
+      var modal = document.querySelector('.modal');
+      modal.style.display = 'none';
+      var headerButton = document.querySelector('.modal a');
       headerButton.style.display = 'none';
     }
   }, {
@@ -275,7 +277,7 @@ var Main = function () {
     value: function playGame() {
       var _this3 = this;
 
-      var textContainers, i, buttonContainers, _i, divAnimal, image, logits, infer, numClasses, res, _i2, exampleCount;
+      var textContainers, i, buttonContainers, _i, divAnimal, image, logits, infer, numClasses, res, _i2;
 
       return regeneratorRuntime.async(function playGame$(_context3) {
         while (1) {
@@ -323,16 +325,13 @@ var Main = function () {
 
 
               for (_i2 = 0; _i2 < NUM_CLASSES; _i2++) {
-
-                // The number of examples for each class
-                exampleCount = this.knn.getClassExampleCount();
-
                 // Make the predicted class bold
-
                 if (res.classIndex == _i2) {
-                  divAnimal[_i2].style.backgroundColor = '#FF0066';
+                  divAnimal[_i2].style.opacity = '0.3';
+                  divAnimal[_i2].style.filter = 'alpha(opacity=30)';
                 } else {
-                  divAnimal[_i2].style.backgroundColor = '#ffffff';
+                  divAnimal[_i2].style.opacity = '1';
+                  divAnimal[_i2].style.filter = 'alpha(opacity=1)';
                 }
               }
 

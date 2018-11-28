@@ -169,7 +169,7 @@ class Main {
         // If classes have been added run predict
         logits = infer();
         const res = await this.knn.predictClass(logits, TOPK);
-        console.log('res.classIndex ===>', res);
+        // console.log('res.classIndex ===>', res);
 
         for (let i = 0; i < NUM_CLASSES; i++) {
 
@@ -194,7 +194,7 @@ class Main {
 
   async playGame() {
     const textContainers = document.getElementsByClassName('textContainer');
-    console.log('textContainers ===>', textContainers);
+    // console.log('textContainers ===>', textContainers);
     for (let i = 0; i < textContainers.length; i ++) {
       textContainers[i].style.display = 'none';
     }
@@ -205,7 +205,10 @@ class Main {
     }
 
     const divAnimal = document.getElementsByClassName('animal');
-
+    const okAnimal = document.querySelector('.ok-animal');
+    const okAnimalImg = document.querySelector('.ok-animal img');
+    const okMessage = document.querySelector('.ok-message');
+    
     // Get image data from video element
     const image = tf.fromPixels(this.video);
 
@@ -219,16 +222,33 @@ class Main {
       // If classes have been added run predict
       logits = infer();
       const res = await this.knn.predictClass(logits, TOPK);
-
+      
+      let foundAnimal = false;
       for (let i = 0; i < NUM_CLASSES; i++) {                
         // Make the predicted class bold
         if (res.classIndex == i) {
           divAnimal[i].style.opacity = '0.3';                        
           divAnimal[i].style.filter = 'alpha(opacity=30)';
+          console.log('ok i =>', i);
+          console.log('ok-image ==>', `images/ok-${images[i]}.png`);
+          okMessage.innerHTML = `Pareces un ${images[i]}`;
 
+          // Hide video and display animal ---> does not look right
+          // this.video.style.display = 'none';
+          // okAnimalImg.src = `images/ok-${images[i]}.png`;
+          // okAnimal.style.display = 'block';
+          // foundAnimal = true;
         } else {          
           divAnimal[i].style.opacity = '1';                  
-          divAnimal[i].style.filter = 'alpha(opacity=1)';                  
+          divAnimal[i].style.filter = 'alpha(opacity=1)';
+
+          // If animal not found return video to show and hide image.
+
+          // if (!foundAnimal) {
+          //   okAnimal.style.display = 'none';
+          //   okAnimalImg.src = ``;
+          //   this.video.style.display = 'block';
+          // }
         }
       }
     }
