@@ -41,7 +41,22 @@ var VIDEO_HEIGHT = 400;
 // K value for KNN
 var TOPK = 10;
 
-var images = ['elefante', 'pajaro', 'mono', 'canguro'];
+var availableAnimals = ['elefante', 'pajaro', 'mono', 'canguro', 'gallina', 'pinguino'];
+
+function getRandom(arr, n) {
+  var result = new Array(n),
+      len = arr.length,
+      taken = new Array(len);
+  if (n > len) throw new RangeError("getRandom: more elements taken than available");
+  while (n--) {
+    var x = Math.floor(Math.random() * len);
+    result[n] = arr[x in taken ? taken[x] : x];
+    taken[x] = --len in taken ? taken[len] : len;
+  }
+  return result;
+}
+
+var images = getRandom(availableAnimals, 4);
 
 var Main = function () {
   function Main() {
@@ -103,13 +118,18 @@ var Main = function () {
         _this.videoPlaying = true;
         _this.trainedAnimals[i] = true;
       });
+
       linkStop.addEventListener('click', function () {
         console.log('stop training');
         _this.training = -1;
         _this.videoPlaying = false;
         if (_this.allAnimalsTrained()) {
           console.log('hey you, lets start playing');
-          _this.playGame();
+          var modal = document.querySelector('.modal');
+          modal.style.display = 'block';
+          var headerButton = document.querySelector('.modal a');
+          headerButton.innerHTML = 'Quiero jugar ya!';
+          headerButton.style.display = 'block';
         }
       });
     };
@@ -135,7 +155,16 @@ var Main = function () {
 
     // Play or Train
     var start = document.querySelector('.modal a');
-    start.addEventListener('click', this.start.bind(this));
+    start.addEventListener('click', function () {
+      console.log('start ===>', start.innerHTML);
+      if (start.innerHTML === 'Empezar a Entrenar') {
+        console.log('entrenar ***********');
+        _this.start();
+      } else if (start.innerHTML === 'Quiero jugar ya!') {
+        console.log('Jugar **********');
+        _this.startGame();
+      }
+    });
   }
 
   _createClass(Main, [{
@@ -162,6 +191,7 @@ var Main = function () {
   }, {
     key: 'start',
     value: function start() {
+      console.log('start ====>');
       if (this.timer) {
         this.stop();
       }
@@ -273,6 +303,16 @@ var Main = function () {
       }, null, this);
     }
   }, {
+    key: 'startGame',
+    value: function startGame() {
+      var modal = document.querySelector('.modal');
+      modal.style.display = 'none';
+      var headerButton = document.querySelector('.modal a');
+      headerButton.style.display = 'none';
+
+      this.playGame();
+    }
+  }, {
     key: 'playGame',
     value: function playGame() {
       var _this3 = this;
@@ -335,6 +375,9 @@ var Main = function () {
                   console.log('ok i =>', _i2);
                   console.log('ok-image ==>', 'images/ok-' + images[_i2] + '.png');
                   okMessage.innerHTML = 'Pareces un ' + images[_i2];
+                  if (images[_i2] == 'gallina') {
+                    okMessage.innerHTML = 'Pareces una ' + images[_i2];
+                  }
 
                   // Hide video and display animal ---> does not look right
                   // this.video.style.display = 'none';

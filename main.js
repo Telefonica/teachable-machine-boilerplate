@@ -51,7 +51,8 @@ class Main {
     this.teachableContainers = [];
     this.training = -1; // -1 when no class is being trained
     this.videoPlaying = false;
-    this.trainedAnimals = [false, false, false, false];
+    this.trainedAnimals = [false, false, false, false]; // start training no Animals is being trained
+    this.foundAnimals = [false, false, false, false]; // start playing no Animal is being found
 
     // Initiate deeplearn.js math and knn classifier objects
     this.bindPage();
@@ -104,8 +105,8 @@ class Main {
         console.log('stop training');
         this.training = -1;
         this.videoPlaying = false;
-        if (this.allAnimalsTrained()) {
-          console.log('hey you, lets start playing');
+        cancelAnimationFrame(this.timer);
+        if (this.checkAnimals(this.trainedAnimals)) {
           const modal = document.querySelector('.modal');
           modal.style.display = 'block';
           const headerButton = document.querySelector('.modal a');
@@ -166,18 +167,16 @@ class Main {
     cancelAnimationFrame(this.timer);
   }
 
-  allAnimalsTrained() {
-    console.log('trained animals ==>', this.trainedAnimals);
-
+  checkAnimals(animals) {
     for (let i = 0; i < NUM_CLASSES; i++) {
-      if (!this.trainedAnimals[i]) {
+      if (!animals[i]) {
         return false;
       }
     }
     return true;      
   }
 
-  async train() {
+  async train() {    
     if (this.videoPlaying) {
       // Get image data from video element
       const image = tf.fromPixels(this.video);
@@ -229,80 +228,99 @@ class Main {
     const headerButton = document.querySelector('.modal a');
     headerButton.style.display = 'none';
 
+    this.videoPlaying = true;
     this.playGame();
   }
 
   async playGame() {
-    const textContainers = document.getElementsByClassName('textContainer');
-    // console.log('textContainers ===>', textContainers);
-    for (let i = 0; i < textContainers.length; i ++) {
-      textContainers[i].style.display = 'none';
-    }
+    if (this.videoPlaying) {
+      const textContainers = document.getElementsByClassName('textContainer');
+      // console.log('textContainers ===>', textContainers);
+      for (let i = 0; i < textContainers.length; i ++) {
+        textContainers[i].style.display = 'none';
+      }
 
-    const buttonContainers = document.getElementsByClassName('buttonContainer');    
-    for (let i = 0; i < buttonContainers.length; i ++) {
-      buttonContainers[i].style.display = 'none';
-    }
+      const buttonContainers = document.getElementsByClassName('buttonContainer');    
+      for (let i = 0; i < buttonContainers.length; i ++) {
+        buttonContainers[i].style.display = 'none';
+      }
 
-    const divAnimal = document.getElementsByClassName('animal');
-    const okAnimal = document.querySelector('.ok-animal');
-    const okAnimalImg = document.querySelector('.ok-animal img');
-    const okMessage = document.querySelector('.ok-message');
-    
-    // Get image data from video element
-    const image = tf.fromPixels(this.video);
-
-    let logits;
-    // 'conv_preds' is the logits activation of MobileNet.
-    const infer = () => this.mobilenet.infer(image, 'conv_preds');
-
-    const numClasses = this.knn.getNumClasses();
-    if (numClasses > 0) {
-
-      // If classes have been added run predict
-      logits = infer();
-      const res = await this.knn.predictClass(logits, TOPK);
+      const divAnimal = document.getElementsByClassName('animal');
+      const okAnimal = document.querySelector('.ok-animal');
+      const okAnimalImg = document.querySelector('.ok-animal img');
+      const okMessage = document.querySelector('.ok-message');
       
-      let foundAnimal = false;
-      for (let i = 0; i < NUM_CLASSES; i++) {                
-        // Make the predicted class bold
-        if (res.classIndex == i) {
-          divAnimal[i].style.opacity = '0.3';                        
-          divAnimal[i].style.filter = 'alpha(opacity=30)';
-          console.log('ok i =>', i);
-          console.log('ok-image ==>', `images/ok-${images[i]}.png`);
-          okMessage.innerHTML = `Pareces un ${images[i]}`;
-          if (images[i] == 'gallina') {
-            okMessage.innerHTML = `Pareces una ${images[i]}`;
+      // Get image data from video element
+      const image = tf.fromPixels(this.video);
+
+      let logits;
+      // 'conv_preds' is the logits activation of MobileNet.
+      const infer = () => this.mobilenet.infer(image, 'conv_preds');
+
+      const numClasses = this.knn.getNumClasses();
+      if (numClasses > 0) {
+
+        // If classes have been added run predict
+        logits = infer();
+        const res = await this.knn.predictClass(logits, TOPK);
+        
+        // let foundAnimal = false;
+
+        for (let i = 0; i < NUM_CLASSES; i++) {                
+          // Make the predicted class bold
+          if (res.classIndex == i) {
+            divAnimal[i].style.opacity = '0.3';                        
+            divAnimal[i].style.filter = 'alpha(opacity=30)';
+            console.log('ok i =>', i);
+            console.log('ok-image ==>', `images/ok-${images[i]}.png`);
+            okMessage.innerHTML = `Pareces un ${images[i]}`;
+            if (images[i] == 'gallina') {
+              okMessage.innerHTML = `Pareces una ${images[i]}`;
+            }
+            this.foundAnimals[i] = true;
+            console.log('found Animals ===>', this.foundAnimals)
+            if(this.checkAnimals(this.foundAnimals)) {
+              console.log('it should stop the game')
+              this.stopGame();
+            }
+
+            // Hide video and display animal ---> does not look right
+            // this.video.style.display = 'none';
+            // okAnimalImg.src = `images/ok-${images[i]}.png`;
+            // okAnimal.style.display = 'block';
+            // foundAnimal = true;
+          } else {          
+            divAnimal[i].style.opacity = '1';                  
+            divAnimal[i].style.filter = 'alpha(opacity=1)';
+
+            // If animal not found return video to show and hide image.
+
+            // if (!foundAnimal) {
+            //   okAnimal.style.display = 'none';
+            //   okAnimalImg.src = ``;
+            //   this.video.style.display = 'block';
+            // }
           }
-
-          // Hide video and display animal ---> does not look right
-          // this.video.style.display = 'none';
-          // okAnimalImg.src = `images/ok-${images[i]}.png`;
-          // okAnimal.style.display = 'block';
-          // foundAnimal = true;
-        } else {          
-          divAnimal[i].style.opacity = '1';                  
-          divAnimal[i].style.filter = 'alpha(opacity=1)';
-
-          // If animal not found return video to show and hide image.
-
-          // if (!foundAnimal) {
-          //   okAnimal.style.display = 'none';
-          //   okAnimalImg.src = ``;
-          //   this.video.style.display = 'block';
-          // }
         }
       }
-    }
 
-    // Dispose image when done
-    image.dispose();
-    if (logits != null) {
-      logits.dispose();
+      // Dispose image when done
+      image.dispose();
+      if (logits != null) {
+        logits.dispose();
+      }
     }
-    
     this.timer = requestAnimationFrame(this.playGame.bind(this));
+  }
+
+  stopGame() {
+    this.stop();
+    this.videoPlaying = false;
+    const modal = document.querySelector('.modal');
+    modal.style.display = 'block';
+    const headerButton = document.querySelector('.modal a');
+    headerButton.innerHTML = 'Eres una Fiera!!';
+    headerButton.style.display = 'block';    
   }
 }
 
