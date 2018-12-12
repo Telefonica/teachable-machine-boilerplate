@@ -119,8 +119,10 @@ body {
   color: white;
 }
 
-.ok-animal {
+.ok {
   display: none;
+  position: absolute;
+  margin: -28px 10px 10px 140px;
 }
 
 .ok-message {

@@ -69,7 +69,8 @@ var Main = function () {
     this.teachableContainers = [];
     this.training = -1; // -1 when no class is being trained
     this.videoPlaying = false;
-    this.trainedAnimals = [false, false, false, false];
+    this.trainedAnimals = [false, false, false, false]; // start training no Animals is being trained
+    this.foundAnimals = [false, false, false, false]; // start playing no Animal is being found
 
     // Initiate deeplearn.js math and knn classifier objects
     this.bindPage();
@@ -123,8 +124,8 @@ var Main = function () {
         console.log('stop training');
         _this.training = -1;
         _this.videoPlaying = false;
-        if (_this.allAnimalsTrained()) {
-          console.log('hey you, lets start playing');
+        cancelAnimationFrame(_this.timer);
+        if (_this.checkAnimals(_this.trainedAnimals)) {
           var modal = document.querySelector('.modal');
           modal.style.display = 'block';
           var headerButton = document.querySelector('.modal a');
@@ -210,12 +211,10 @@ var Main = function () {
       cancelAnimationFrame(this.timer);
     }
   }, {
-    key: 'allAnimalsTrained',
-    value: function allAnimalsTrained() {
-      console.log('trained animals ==>', this.trainedAnimals);
-
+    key: 'checkAnimals',
+    value: function checkAnimals(animals) {
       for (var i = 0; i < NUM_CLASSES; i++) {
-        if (!this.trainedAnimals[i]) {
+        if (!animals[i]) {
           return false;
         }
       }
@@ -310,6 +309,7 @@ var Main = function () {
       var headerButton = document.querySelector('.modal a');
       headerButton.style.display = 'none';
 
+      this.videoPlaying = true;
       this.playGame();
     }
   }, {
@@ -317,12 +317,17 @@ var Main = function () {
     value: function playGame() {
       var _this3 = this;
 
-      var textContainers, i, buttonContainers, _i, divAnimal, okAnimal, okAnimalImg, okMessage, image, logits, infer, numClasses, res, foundAnimal, _i2;
+      var textContainers, i, buttonContainers, _i, divAnimal, okAnimal, okAnimalImg, okMessage, image, logits, infer, numClasses, res, _i2;
 
       return regeneratorRuntime.async(function playGame$(_context3) {
         while (1) {
           switch (_context3.prev = _context3.next) {
             case 0:
+              if (!this.videoPlaying) {
+                _context3.next = 21;
+                break;
+              }
+
               textContainers = document.getElementsByClassName('textContainer');
               // console.log('textContainers ===>', textContainers);
 
@@ -360,12 +365,14 @@ var Main = function () {
 
               // If classes have been added run predict
               logits = infer();
-              _context3.next = 16;
+              _context3.next = 17;
               return regeneratorRuntime.awrap(this.knn.predictClass(logits, TOPK));
 
-            case 16:
+            case 17:
               res = _context3.sent;
-              foundAnimal = false;
+
+
+              // let foundAnimal = false;
 
               for (_i2 = 0; _i2 < NUM_CLASSES; _i2++) {
                 // Make the predicted class bold
@@ -377,6 +384,12 @@ var Main = function () {
                   okMessage.innerHTML = 'Pareces un ' + images[_i2];
                   if (images[_i2] == 'gallina') {
                     okMessage.innerHTML = 'Pareces una ' + images[_i2];
+                  }
+                  this.foundAnimals[_i2] = true;
+                  console.log('found Animals ===>', this.foundAnimals);
+                  if (this.checkAnimals(this.foundAnimals)) {
+                    console.log('it should stop the game');
+                    this.stopGame();
                   }
 
                   // Hide video and display animal ---> does not look right
@@ -406,6 +419,7 @@ var Main = function () {
                 logits.dispose();
               }
 
+            case 21:
               this.timer = requestAnimationFrame(this.playGame.bind(this));
 
             case 22:
@@ -414,6 +428,17 @@ var Main = function () {
           }
         }
       }, null, this);
+    }
+  }, {
+    key: 'stopGame',
+    value: function stopGame() {
+      this.stop();
+      this.videoPlaying = false;
+      var modal = document.querySelector('.modal');
+      modal.style.display = 'block';
+      var headerButton = document.querySelector('.modal a');
+      headerButton.innerHTML = 'Eres una Fiera!!';
+      headerButton.style.display = 'block';
     }
   }]);
 

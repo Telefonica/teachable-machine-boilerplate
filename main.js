@@ -139,6 +139,8 @@ class Main {
       } else if(start.innerHTML === 'Quiero jugar ya!') {
         console.log('Jugar **********');
         this.startGame();
+      } else if(start.innerHTML === 'Eres una Fiera!!') {
+        location.reload();
       }
     });
   }
@@ -246,8 +248,6 @@ class Main {
       }
 
       const divAnimal = document.getElementsByClassName('animal');
-      const okAnimal = document.querySelector('.ok-animal');
-      const okAnimalImg = document.querySelector('.ok-animal img');
       const okMessage = document.querySelector('.ok-message');
       
       // Get image data from video element
@@ -266,12 +266,17 @@ class Main {
         
         // let foundAnimal = false;
 
-        for (let i = 0; i < NUM_CLASSES; i++) {                
+        for (let i = 0; i < NUM_CLASSES; i++) {
+          const okAnimal = document.querySelector(`.animal-${i} .ok`);                
           // Make the predicted class bold
           if (res.classIndex == i) {
+            console.log('ok i =>', i);
+
             divAnimal[i].style.opacity = '0.3';                        
             divAnimal[i].style.filter = 'alpha(opacity=30)';
-            console.log('ok i =>', i);
+            console.log('div Animal [i] ===>', divAnimal[i]);
+            okAnimal.style.display = 'block';
+
             console.log('ok-image ==>', `images/ok-${images[i]}.png`);
             okMessage.innerHTML = `Pareces un ${images[i]}`;
             if (images[i] == 'gallina') {
@@ -289,9 +294,10 @@ class Main {
             // okAnimalImg.src = `images/ok-${images[i]}.png`;
             // okAnimal.style.display = 'block';
             // foundAnimal = true;
-          } else {          
-            divAnimal[i].style.opacity = '1';                  
-            divAnimal[i].style.filter = 'alpha(opacity=1)';
+          } else {
+            // no quiar opacidad una vez encontrado    
+            // divAnimal[i].style.opacity = '1';                  
+            // divAnimal[i].style.filter = 'alpha(opacity=1)';            
 
             // If animal not found return video to show and hide image.
 
