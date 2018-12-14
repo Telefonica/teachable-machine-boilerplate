@@ -164,6 +164,8 @@ var Main = function () {
       } else if (start.innerHTML === 'Quiero jugar ya!') {
         console.log('Jugar **********');
         _this.startGame();
+      } else if (start.innerHTML === 'Eres una Fiera!!') {
+        location.reload();
       }
     });
   }
@@ -317,14 +319,14 @@ var Main = function () {
     value: function playGame() {
       var _this3 = this;
 
-      var textContainers, i, buttonContainers, _i, divAnimal, okAnimal, okAnimalImg, okMessage, image, logits, infer, numClasses, res, _i2;
+      var textContainers, i, buttonContainers, _i, divAnimal, okMessage, image, logits, infer, numClasses, res, _i2, okAnimal;
 
       return regeneratorRuntime.async(function playGame$(_context3) {
         while (1) {
           switch (_context3.prev = _context3.next) {
             case 0:
               if (!this.videoPlaying) {
-                _context3.next = 21;
+                _context3.next = 19;
                 break;
               }
 
@@ -342,8 +344,6 @@ var Main = function () {
               }
 
               divAnimal = document.getElementsByClassName('animal');
-              okAnimal = document.querySelector('.ok-animal');
-              okAnimalImg = document.querySelector('.ok-animal img');
               okMessage = document.querySelector('.ok-message');
 
               // Get image data from video element
@@ -359,27 +359,33 @@ var Main = function () {
               numClasses = this.knn.getNumClasses();
 
               if (!(numClasses > 0)) {
-                _context3.next = 19;
+                _context3.next = 17;
                 break;
               }
 
               // If classes have been added run predict
               logits = infer();
-              _context3.next = 17;
+              _context3.next = 15;
               return regeneratorRuntime.awrap(this.knn.predictClass(logits, TOPK));
 
-            case 17:
+            case 15:
               res = _context3.sent;
 
 
               // let foundAnimal = false;
 
               for (_i2 = 0; _i2 < NUM_CLASSES; _i2++) {
+                okAnimal = document.querySelector('.animal-' + _i2 + ' .ok');
                 // Make the predicted class bold
+
                 if (res.classIndex == _i2) {
+                  console.log('ok i =>', _i2);
+
                   divAnimal[_i2].style.opacity = '0.3';
                   divAnimal[_i2].style.filter = 'alpha(opacity=30)';
-                  console.log('ok i =>', _i2);
+                  console.log('div Animal [i] ===>', divAnimal[_i2]);
+                  okAnimal.style.display = 'block';
+
                   console.log('ok-image ==>', 'images/ok-' + images[_i2] + '.png');
                   okMessage.innerHTML = 'Pareces un ' + images[_i2];
                   if (images[_i2] == 'gallina') {
@@ -398,20 +404,21 @@ var Main = function () {
                   // okAnimal.style.display = 'block';
                   // foundAnimal = true;
                 } else {
-                  divAnimal[_i2].style.opacity = '1';
-                  divAnimal[_i2].style.filter = 'alpha(opacity=1)';
+                    // no quiar opacidad una vez encontrado    
+                    // divAnimal[i].style.opacity = '1';                  
+                    // divAnimal[i].style.filter = 'alpha(opacity=1)';            
 
-                  // If animal not found return video to show and hide image.
+                    // If animal not found return video to show and hide image.
 
-                  // if (!foundAnimal) {
-                  //   okAnimal.style.display = 'none';
-                  //   okAnimalImg.src = ``;
-                  //   this.video.style.display = 'block';
-                  // }
-                }
+                    // if (!foundAnimal) {
+                    //   okAnimal.style.display = 'none';
+                    //   okAnimalImg.src = ``;
+                    //   this.video.style.display = 'block';
+                    // }
+                  }
               }
 
-            case 19:
+            case 17:
 
               // Dispose image when done
               image.dispose();
@@ -419,10 +426,10 @@ var Main = function () {
                 logits.dispose();
               }
 
-            case 21:
+            case 19:
               this.timer = requestAnimationFrame(this.playGame.bind(this));
 
-            case 22:
+            case 20:
             case 'end':
               return _context3.stop();
           }
